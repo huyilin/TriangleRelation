@@ -19,9 +19,9 @@ public class TriangleFind {
 			String [] linearray=line.split(",");
 			for(int i=1;i<linearray.length;i++){
 				for(int j=1;j<linearray.length&&j!=i;j++){
-					String userstr=linearray[1];
+					String userstr=linearray[i];
 					user=new Text(userstr);
-					String uservalstr=linearray[i]+","+linearray[j];
+					String uservalstr=linearray[j]+","+linearray[1];
 					uservalue=new Text(uservalstr);
 					output.collect(user,uservalue);
 				}
@@ -55,7 +55,7 @@ public class TriangleFind {
 //		Job job2=new job(jobconf2);
 //		JobClient.run(job2);
 		
-		job1.setJobName("TriangleFind");
+		conf.setJobName("TriangleFind");
 		conf.setOutputKeyClass(Text.class);
 		conf.setOutputValueClass(Text.class);
  	
