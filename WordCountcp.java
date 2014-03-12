@@ -19,7 +19,7 @@ public class TriangleFind {
 			String [] linearray=line.split(",");
 			for(int i=1;i<linearray.length;i++){
 				for(int j=1;j<linearray.length&&j!=i;j++){
-					userstr=linearray[1];
+					String userstr=linearray[1];
 					user=Text(userstr);
 					String uservalstr=linearray[i]+","+linearray[j];
 					uservalue=Text(uservalstr);
@@ -30,16 +30,17 @@ public class TriangleFind {
 	}
  	
 	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
-		private Text relationvalue
+		private Text relationvalue;
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 //			int sum = 0;
 			ArrayList<String> myList= new ArrayList<String>();
 			while (values.hasNext()) {
 				myList.add(values.next().toString());
 			}
-			for(String s: mylist){
-				String [] sarray=line.split(",");
-				relationvalue=Text(array[1]+","+array[0]);	
+			for(String s: myList){
+				String [] sarray=s.split(",");
+				String inverse=sarray[1]+","+sarray[0];
+				relationvalue=Text(inverse);
 				if (myList.contains(inverse)){
 					output.collect(key,relationvalue);
 				}
@@ -56,7 +57,7 @@ public class TriangleFind {
 		
 		job1.setJobName("TriangleFind");
 		conf.setOutputKeyClass(Text.class);
-		conf.setOutputValueClass(IntWritable.class);
+		conf.setOutputValueClass(Text.class);
  	
 		conf.setMapperClass(Map.class);
 		conf.setCombinerClass(Reduce.class);
