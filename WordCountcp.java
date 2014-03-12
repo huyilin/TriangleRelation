@@ -20,9 +20,9 @@ public class TriangleFind {
 			for(int i=1;i<linearray.length;i++){
 				for(int j=1;j<linearray.length&&j!=i;j++){
 					String userstr=linearray[1];
-					user=Text(userstr);
+					user=new Text(userstr);
 					String uservalstr=linearray[i]+","+linearray[j];
-					uservalue=Text(uservalstr);
+					uservalue=new Text(uservalstr);
 					output.collect(user,uservalue);
 				}
 			}
@@ -40,8 +40,8 @@ public class TriangleFind {
 			for(String s: myList){
 				String [] sarray=s.split(",");
 				String inverse=sarray[1]+","+sarray[0];
-				relationvalue=Text(inverse);
 				if (myList.contains(inverse)){
+					relationvalue=new Text(inverse);
 					output.collect(key,relationvalue);
 				}
 			}
