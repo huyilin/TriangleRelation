@@ -18,12 +18,12 @@ public class TriangleFind {
 			String line = value.toString();
 			String [] linearray=line.split(",");
 			for(int i=1;i<linearray.length;i++){
+				String userstr=linearray[i];
+				user=new Text(userstr);
 				for(int j=1;j<linearray.length&&j!=i;j++){
-					String userstr=linearray[i];
-					user=new Text(userstr);
-					String uservalstr=linearray[j]+","+linearray[1];
-					uservalue=new Text(uservalstr);
-					output.collect(user,uservalue);
+						String uservalstr=linearray[j]+","+linearray[0];
+						uservalue=new Text(uservalstr);
+						output.collect(user,uservalue);
 				}
 			}
 		}
