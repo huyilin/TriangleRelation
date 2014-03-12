@@ -9,55 +9,54 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
  	
-public class hw2 {
-	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, Text> {
-		private final static IntWritable one = new IntWritable(1);
-		private Text word = new Text();
-		public void map(LongWritable key, Text value, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
+public class TriangleFind {
+	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
+//		private final static IntWritable one = new IntWritable(1);
+		private Text userkey = new Text();	
+		private Text uservalue=new  
+		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 			String line = value.toString();
-			String [] immediatekey= new String[2];
-			String[] s=line.split(",");
-			for (int i=1;i<s.length,i++){
-				for(int j=1,j<s&&j!=i,j++){
-					key=s[i];
-					immediatekey[0]=s[j];
-					immediatekey[1]=s[0];
-				//	ArrayList.add(immediatekey);
-				//  connectlist.add(immediatekey);
-					output.collect(key,immediatekey);
+			String [] linearray=line.split(",");
+			for(int i=1;i<linearray.length;i++){
+				for(int j=1;j<linearray.length&&j!=i;j++){
+					userstr=linearray[1];
+					private Text user=Text(userstr);
+					String uservalstr=linearray[i]+","+linearray[j];
+					private Text uservalue=Text(uservalstr);
+					output.collect(user,uservalue);
 				}
 			}
-			//StringTokenizer tokenizer = new StringTokenizer(line);
-/*			while (tokenizer.hasMoreTokens()) {
-				word.set(tokenizer.nextToken());
-				connectlist.add(new connection());
-				connectlist.get(1).node1=5;
-				output.collect(word, one);*/
-			}
 		}
 	}
  	
-public static class Reduce extends MapReduceBase implements Reducer<IntWritable, String[], Text, IntWritable> {
-	public void reduce(IntWritable key, Iterator<String[]> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
-		while (values.hasNext()){
-			value=values.next().get();
-			compare[0]=value[1];
-			compare[1]=value[0];
-			
-			if values.contain(compare){
-				Output.collect(compare,ture);
+	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, > {
+		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+//			int sum = 0;
+			ArrayList<String> myList= new ArrayList<String>();
+			while (values.hasNext()) {
+				myList.add(values.next().toString());
+			}
+			for(String s: mylist){
+				String [] sarray=line.split(",");
+				private Text relationvalue=Text(array[1]+","+array[0]);			
+				if (myList.contains(inverse)){
+					output.collect(key,relationvalue);
+				}
 			}
 		}
 	}
-}
  	
 	public static void main(String[] args) throws Exception {
-		JobConf conf = new JobConf(HW2.class);
-		conf.setJobName("HW2");
- 	
+		JobConf conf = new JobConf(TriangleFind.class);
+		//		Job job1=new job(jobconf1);
+//		JobClient.run(job1);
+//		Job job2=new job(jobconf2);
+//		JobClient.run(job2);
+		
+		job1.setJobName("TriangleFind");
 		conf.setOutputKeyClass(Text.class);
 		conf.setOutputValueClass(IntWritable.class);
-		
+ 	
 		conf.setMapperClass(Map.class);
 		conf.setCombinerClass(Reduce.class);
 		conf.setReducerClass(Reduce.class);
