@@ -12,25 +12,26 @@ import org.apache.hadoop.util.*;
 public class TriangleFind {
 	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 //		private final static IntWritable one = new IntWritable(1);
-		private Text userkey = new Text();	
-		private Text uservalue=new  
+		private Text user;
+		private Text uservalue;
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 			String line = value.toString();
 			String [] linearray=line.split(",");
 			for(int i=1;i<linearray.length;i++){
 				for(int j=1;j<linearray.length&&j!=i;j++){
 					userstr=linearray[1];
-					private Text user=Text(userstr);
+					user=Text(userstr);
 					String uservalstr=linearray[i]+","+linearray[j];
-					private Text uservalue=Text(uservalstr);
+					uservalue=Text(uservalstr);
 					output.collect(user,uservalue);
 				}
 			}
 		}
 	}
  	
-	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, > {
-		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+		private Text relationvalue
+		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 //			int sum = 0;
 			ArrayList<String> myList= new ArrayList<String>();
 			while (values.hasNext()) {
@@ -38,7 +39,7 @@ public class TriangleFind {
 			}
 			for(String s: mylist){
 				String [] sarray=line.split(",");
-				private Text relationvalue=Text(array[1]+","+array[0]);			
+				relationvalue=Text(array[1]+","+array[0]);	
 				if (myList.contains(inverse)){
 					output.collect(key,relationvalue);
 				}
@@ -69,4 +70,4 @@ public class TriangleFind {
  	
 		JobClient.runJob(conf);
 	}
-}	
+}
