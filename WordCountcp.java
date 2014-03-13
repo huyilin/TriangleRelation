@@ -29,21 +29,16 @@ public class TriangleFind {
 			}
 		}
 	}
-	
-	public static class Map1 extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
-//		private final static IntWritable one = new IntWritable(1);
+
+	public static class Map1 extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
+		private final static IntWritable one = new IntWritable(1);
 		private Text TriangleKey;
-		private Text TriangleValue;
-		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
-			String line = value.toString();
-			String [] linearray=line.split(",|\\s+");
-			Arrays.sort(linearray);
-			TriangleKey=new Text(linearray[0]+","+linearray[1]+","+linearray[2]);
-			TriangleValue=new Text("Triangle");
-			output.collect(TriangleKey,TriangleValue);
+		public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+			TriangleKey=new Text("Triangle");
+			output.collect(TriangleKey,one);
 		}
 	}
-	
+
 	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 		private Text relationvalue;
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
@@ -53,27 +48,33 @@ public class TriangleFind {
 				myList.add(values.next().toString());
 			}
 			for(String s: myList){
-				String [] sarray=s.split(",");
-				String inverse=sarray[1]+","+sarray[0];
-				if (myList.contains(inverse)){
-					relationvalue=new Text(inverse);
+//				String [] sarray=s.split(",");
+//				String inverse=sarray[1]+","+sarray[0];
+//				if (myList.contains(inverse)){
+					relationvalue=new Text(s);
 					output.collect(key,relationvalue);
-				}
+//				}
 			}
 		}
 	}
+
 	
-	public static class Reduce1 extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+	
+	
+	public static class Reduce1 extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
 		private Text outputsymbol;
-		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
-//			int sum = 0;
-			outputsymbol=new Text("Triangle");
-			output.collect(key,outputsymbol);
+		public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+			int sum = 0;
+			while (values.hasNext()) {
+				sum += values.next().get();
+			}
+			output.collect(key,new IntWritable(sum));
 		}
 	}
-	 	
+	
+
 	public static void main(String[] args) throws Exception {
-		
+
 		//Specify the path to store the result of fisrt reduce function
 		String [] pathtemparray=args[1].split("/"); 
 		StringBuilder pathtempstr=new StringBuilder();		
@@ -83,14 +84,14 @@ public class TriangleFind {
 		pathtempstr.append("temp");
 		String pathtemp=pathtempstr.toString(); 
 		//end   
-		
+
 		JobConf conf = new JobConf(TriangleFind.class);
 		conf.setJobName("TriangleFind");
 		conf.setOutputKeyClass(Text.class);
 		conf.setOutputValueClass(Text.class);
-		
+
 		conf.setMapperClass(Map.class);
-		conf.setCombinerClass(Reduce.class);
+//		conf.setCombinerClass(Reduce.class);
 		conf.setReducerClass(Reduce.class);
  	
 		conf.setInputFormat(TextInputFormat.class);
@@ -99,24 +100,24 @@ public class TriangleFind {
 		FileInputFormat.setInputPaths(conf, new Path(args[0]));
 		FileOutputFormat.setOutputPath(conf, new Path(pathtemp));
 		JobClient.runJob(conf);
-		
-//	The second mapreduce
-		JobConf confnext=new JobConf(TriangleFind.class);
+
+////////////////////////	The second mapreduce
+/*		JobConf confnext=new JobConf(TriangleFind.class);
 		confnext.setJobName("TriangleFindNext");
 		confnext.setOutputKeyClass(Text.class);
-		confnext.setOutputValueClass(Text.class);
-		
+		confnext.setOutputValueClass(IntWritable.class);
+
 		confnext.setMapperClass(Map1.class);
-		confnext.setCombinerClass(Reduce1.class);
+//		confnext.setCombinerClass(Reduce1.class);
 		confnext.setReducerClass(Reduce1.class);
  	
 		confnext.setInputFormat(TextInputFormat.class);
 		confnext.setOutputFormat(TextOutputFormat.class);
-		
+
 		FileInputFormat.setInputPaths(confnext, new Path(pathtemp,"part-00000"));
 		FileOutputFormat.setOutputPath(confnext, new Path(args[1]));
 		JobClient.runJob(confnext);
-		
+*/
 /*		Job job1=new Job(conf);
 		Job job2=new Job(confnext);
 		
