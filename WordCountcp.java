@@ -10,7 +10,7 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
 //import org.apache.hadoop.mapred.jobcontrol.*;
 
-public class TriangleFind {
+public class hw2 {
 	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 //		private final static IntWritable one = new IntWritable(1);
 		private Text user;
@@ -21,10 +21,12 @@ public class TriangleFind {
 			for(int i=1;i<linearray.length;i++){
 				String userstr=linearray[i];
 				user=new Text(userstr);
-				for(int j=1;j<linearray.length&&j!=i;j++){
-						String uservalstr=linearray[j]+","+linearray[0];
-						uservalue=new Text(uservalstr);
-						output.collect(user,uservalue);
+				for(int j=1;j<linearray.length;j++){
+						if(j!=i){
+							String uservalstr=linearray[j]+","+linearray[0];
+							uservalue=new Text(uservalstr);
+							output.collect(user,uservalue);
+						}
 				}
 			}
 		}
@@ -48,19 +50,16 @@ public class TriangleFind {
 				myList.add(values.next().toString());
 			}
 			for(String s: myList){
-//				String [] sarray=s.split(",");
-//				String inverse=sarray[1]+","+sarray[0];
-//				if (myList.contains(inverse)){
+				String [] sarray=s.split(",");
+				String inverse=sarray[1]+","+sarray[0];
+				if (myList.contains(inverse)){
 					relationvalue=new Text(s);
 					output.collect(key,relationvalue);
-//				}
+				}
 			}
 		}
 	}
 
-	
-	
-	
 	public static class Reduce1 extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
 		private Text outputsymbol;
 		public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
@@ -68,6 +67,7 @@ public class TriangleFind {
 			while (values.hasNext()) {
 				sum += values.next().get();
 			}
+			sum=sum/6;
 			output.collect(key,new IntWritable(sum));
 		}
 	}
@@ -75,7 +75,7 @@ public class TriangleFind {
 
 	public static void main(String[] args) throws Exception {
 
-		//Specify the path to store the result of fisrt reduce function
+		//Specify the path to store the result of first reduce function
 		String [] pathtemparray=args[1].split("/"); 
 		StringBuilder pathtempstr=new StringBuilder();		
 		for(int i=0;i<pathtemparray.length-1;i++){
@@ -85,8 +85,8 @@ public class TriangleFind {
 		String pathtemp=pathtempstr.toString(); 
 		//end   
 
-		JobConf conf = new JobConf(TriangleFind.class);
-		conf.setJobName("TriangleFind");
+		JobConf conf = new JobConf(hw2.class);
+		conf.setJobName("TriangleFindPhase1");
 		conf.setOutputKeyClass(Text.class);
 		conf.setOutputValueClass(Text.class);
 
@@ -102,8 +102,8 @@ public class TriangleFind {
 		JobClient.runJob(conf);
 
 ////////////////////////	The second mapreduce
-/*		JobConf confnext=new JobConf(TriangleFind.class);
-		confnext.setJobName("TriangleFindNext");
+		JobConf confnext=new JobConf(hw2.class);
+		confnext.setJobName("TriangleFindPhase2");
 		confnext.setOutputKeyClass(Text.class);
 		confnext.setOutputValueClass(IntWritable.class);
 
@@ -114,10 +114,10 @@ public class TriangleFind {
 		confnext.setInputFormat(TextInputFormat.class);
 		confnext.setOutputFormat(TextOutputFormat.class);
 
-		FileInputFormat.setInputPaths(confnext, new Path(pathtemp,"part-00000"));
+		FileInputFormat.setInputPaths(confnext, new Path(pathtemp,"part-00000")); //read data from the temp(Output file of the first mapreduce)
 		FileOutputFormat.setOutputPath(confnext, new Path(args[1]));
 		JobClient.runJob(confnext);
-*/
+
 /*		Job job1=new Job(conf);
 		Job job2=new Job(confnext);
 		
