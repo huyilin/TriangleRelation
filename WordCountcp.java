@@ -2,13 +2,14 @@ package org.myorg;
 
 import java.io.IOException;
 import java.util.*;
-	
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
- 	
+//import org.apache.hadoop.mapred.jobcontrol.*;
+
 public class TriangleFind {
 	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 //		private final static IntWritable one = new IntWritable(1);
@@ -28,7 +29,21 @@ public class TriangleFind {
 			}
 		}
 	}
- 	
+	
+	public static class Map1 extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
+//		private final static IntWritable one = new IntWritable(1);
+		private Text TriangleKey;
+		private Text TriangleValue;
+		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
+			String line = value.toString();
+			String [] linearray=line.split(",|\\s+");
+			Arrays.sort(linearray);
+			TriangleKey=new Text(linearray[0]+","+linearray[1]+","+linearray[2]);
+			TriangleValue=new Text("Triangle");
+			output.collect(TriangleKey,TriangleValue);
+		}
+	}
+	
 	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 		private Text relationvalue;
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
@@ -47,18 +62,33 @@ public class TriangleFind {
 			}
 		}
 	}
- 	
+	
+	public static class Reduce1 extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+		private Text outputsymbol;
+		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
+//			int sum = 0;
+			outputsymbol=new Text("Triangle");
+			output.collect(key,outputsymbol);
+		}
+	}
+	 	
 	public static void main(String[] args) throws Exception {
-		JobConf conf = new JobConf(TriangleFind.class);
-		//		Job job1=new job(jobconf1);
-//		JobClient.run(job1);
-//		Job job2=new job(jobconf2);
-//		JobClient.run(job2);
 		
+		//Specify the path to store the result of fisrt reduce function
+		String [] pathtemparray=args[1].split("/"); 
+		StringBuilder pathtempstr=new StringBuilder();		
+		for(int i=0;i<pathtemparray.length-1;i++){
+			 pathtempstr.append(pathtemparray[i]+"/");
+		}
+		pathtempstr.append("temp");
+		String pathtemp=pathtempstr.toString(); 
+		//end   
+		
+		JobConf conf = new JobConf(TriangleFind.class);
 		conf.setJobName("TriangleFind");
 		conf.setOutputKeyClass(Text.class);
 		conf.setOutputValueClass(Text.class);
- 	
+		
 		conf.setMapperClass(Map.class);
 		conf.setCombinerClass(Reduce.class);
 		conf.setReducerClass(Reduce.class);
@@ -67,8 +97,39 @@ public class TriangleFind {
 		conf.setOutputFormat(TextOutputFormat.class);
  	
 		FileInputFormat.setInputPaths(conf, new Path(args[0]));
-		FileOutputFormat.setOutputPath(conf, new Path(args[1]));
- 	
+		FileOutputFormat.setOutputPath(conf, new Path(pathtemp));
 		JobClient.runJob(conf);
+		
+//	The second mapreduce
+		JobConf confnext=new JobConf(TriangleFind.class);
+		confnext.setJobName("TriangleFindNext");
+		confnext.setOutputKeyClass(Text.class);
+		confnext.setOutputValueClass(Text.class);
+		
+		confnext.setMapperClass(Map1.class);
+		confnext.setCombinerClass(Reduce1.class);
+		confnext.setReducerClass(Reduce1.class);
+ 	
+		confnext.setInputFormat(TextInputFormat.class);
+		confnext.setOutputFormat(TextOutputFormat.class);
+		
+		FileInputFormat.setInputPaths(confnext, new Path(pathtemp,"part-00000"));
+		FileOutputFormat.setOutputPath(confnext, new Path(args[1]));
+		JobClient.runJob(confnext);
+		
+/*		Job job1=new Job(conf);
+		Job job2=new Job(confnext);
+		
+        JobControl jbctrl = new JobControl("TriangelCount");
+        jbctrl.addJob(job1);
+        jbctrl.addJob(job2);
+        job2.addDependingJob(job1);
+
+        Thread thread = new Thread(jbctrl);
+        thread.start();
+        while(!jbctrl.allFinished()){
+                thread.sleep(1000);
+        }
+        jbctrl.stop(); */
 	}
 }
