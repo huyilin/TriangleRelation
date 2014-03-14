@@ -45,28 +45,28 @@ public class hw2 {
 		}
 	}
 
-	public static class Map1 extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
-		
+	public static class Map1 extends MapReduceBase implements Mapper<LongWritable, Text, Text, LongWritable> {
 		private Text localkey;
-		private IntWritable localvalue;
-		public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+		private LongWritable localvalue;
+		public void map(LongWritable key, Text value, OutputCollector<Text, LongWritable> output, Reporter reporter) throws IOException {
 			String line= value.toString();
 			String[] linearray=line.split(",|\\s+");
-			localkey=new Text("TriangleNumbers:");
-			localvalue=new IntWritable(Integer.parseInt(linearray[2]));
+			localkey=new Text("T");
+			localvalue=new LongWritable(Integer.parseInt(linearray[2]));
 			output.collect(localkey,localvalue);
 		}
 	}
 	
-	public static class Reduce1 extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
+	public static class Reduce1 extends MapReduceBase implements Reducer<Text, LongWritable, Text, LongWritable> {
 		private Text outputsymbol;
-		public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
-			int sum = 0;
+		private Text localkey=new Text("NumberofTriangles:");
+		public void reduce(Text key, Iterator<LongWritable> values, OutputCollector<Text, LongWritable> output, Reporter reporter) throws IOException {
+			long sum = 0;
 			while (values.hasNext()) {
 				sum += values.next().get();
 			}
 			sum=sum/3;
-			output.collect(key,new IntWritable(sum));
+			output.collect(localkey,new LongWritable(sum));
 		}
 	}
 	
@@ -89,9 +89,7 @@ public class hw2 {
 		conf.setReducerClass(Reduce.class);
 		conf.setNumMapTasks(80);
 		conf.setNumReduceTasks(80);
-//		TextInputFormat inputForm1= new TextInputFormat();
-//		inputForm1.setMaxInputSplitSize(conf,5120000);
-//		conf.setInputFormat(inputForm1);
+
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
  	
@@ -101,23 +99,20 @@ public class hw2 {
 
 //		The second mapreduce function
 		JobConf confnext=new JobConf(hw2.class);
-		confnext.setNumMapTasks(80);
-		confnext.setNumReduceTasks(80);
+//		confnext.setNumMapTasks(1);
+//		confnext.setNumReduceTasks(1);
 		confnext.setJobName("TriangleFindPhase2");
 		confnext.setOutputKeyClass(Text.class);
-		confnext.setOutputValueClass(IntWritable.class);
+		confnext.setOutputValueClass(LongWritable.class);
 
 		confnext.setMapperClass(Map1.class);
 		confnext.setReducerClass(Reduce1.class);
 		
-//		TextInputFormat inputForm2= new TextInputFormat();
-//		inputForm2.setMaxInputSplitSize(confnext,5120000);
-//		confnext.setInputFormat(inputForm2.class);
 		confnext.setInputFormat(TextInputFormat.class);
 		confnext.setOutputFormat(TextOutputFormat.class);
 
 		FileInputFormat.setInputPaths(confnext, new Path(pathtemp,"part-00000")); //read data from the temp(Output file of the first mapreduce)
 		FileOutputFormat.setOutputPath(confnext, new Path(args[1]));
 		JobClient.runJob(confnext);
-	}	
+	}
 }
