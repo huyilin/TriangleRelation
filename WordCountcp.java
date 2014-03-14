@@ -69,19 +69,17 @@ public class hw2 {
 			output.collect(key,new IntWritable(sum));
 		}
 	}
-
-
+	
 	public static void main(String[] args) throws Exception {
-
-		
 		String [] pathtemparray=args[1].split("/"); 
-		StringBuilder pathtempstr=new StringBuilder();		
+		StringBuilder pathtempstr=new StringBuilder();
 		for(int i=0;i<pathtemparray.length-1;i++){
 			 pathtempstr.append(pathtemparray[i]+"/");
 		}
+		
 		pathtempstr.append("temp");
 		String pathtemp=pathtempstr.toString();    //Specify the path to store the result of first reduce function
-
+		
 		JobConf conf = new JobConf(hw2.class);
 		conf.setJobName("TriangleFindPhase1");
 		conf.setOutputKeyClass(Text.class);
@@ -89,7 +87,11 @@ public class hw2 {
 
 		conf.setMapperClass(Map.class);
 		conf.setReducerClass(Reduce.class);
- 	
+		conf.setNumMapTasks(80);
+		conf.setNumReduceTasks(80);
+//		TextInputFormat inputForm1= new TextInputFormat();
+//		inputForm1.setMaxInputSplitSize(conf,5120000);
+//		conf.setInputFormat(inputForm1);
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
  	
@@ -99,13 +101,18 @@ public class hw2 {
 
 //		The second mapreduce function
 		JobConf confnext=new JobConf(hw2.class);
+		confnext.setNumMapTasks(80);
+		confnext.setNumReduceTasks(80);
 		confnext.setJobName("TriangleFindPhase2");
 		confnext.setOutputKeyClass(Text.class);
 		confnext.setOutputValueClass(IntWritable.class);
 
 		confnext.setMapperClass(Map1.class);
 		confnext.setReducerClass(Reduce1.class);
- 	
+		
+//		TextInputFormat inputForm2= new TextInputFormat();
+//		inputForm2.setMaxInputSplitSize(confnext,5120000);
+//		confnext.setInputFormat(inputForm2.class);
 		confnext.setInputFormat(TextInputFormat.class);
 		confnext.setOutputFormat(TextOutputFormat.class);
 
